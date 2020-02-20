@@ -19,7 +19,7 @@ long double diffsquared::cost(Fragment &leftImage, Fragment &rightImage)
 		double difference{};
 		for (int i = 0; i < leftImage.img.rows; i++)
 		{
-			for (int j = 0; j < leftImage.img.cols; j++)
+			for (int j = 0; j < leftImage.img.cols; j++)//change to min size from last/first
 			{
 				double pixel_difference = leftImage.img.at<uchar>(i, j) - rightImage.img.at<uchar>(i, rightImage.img.cols - j);
 				difference += pow(pixel_difference, 2);

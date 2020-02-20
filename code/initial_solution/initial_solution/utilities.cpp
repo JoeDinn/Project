@@ -38,21 +38,18 @@ void shuffle(Solution & solution)
 	std::cout << "done\n";
 }
 
+
+
+
+
 int leftMost(Solution & solution)
 {
 	int left_most_index{};
 	long long  best_whiteness{};
 	for (int index{}; index < solution.size(); ++index)
 	{
-		long long whiteness{};
-		for (int i{}; i < solution[index].img.rows; ++i)
-		{
-			for (int j{}; j < solution[index].img.cols; ++j)
-			{
-				whiteness += (int)solution[index].img.at<uchar>(i, j) * (solution[index].img.cols - j);
-				
-			}
-		}
+		long long whiteness{ whiteness_score(solution[index])};
+
 		std::cout << solution[index].name << " " << whiteness << std::endl;
 		if (whiteness > best_whiteness)
 		{
@@ -60,7 +57,25 @@ int leftMost(Solution & solution)
 			best_whiteness = whiteness;
 		}
 	}
+	std::cout << "Best: " << solution[left_most_index].name << " " << best_whiteness << std::endl;
 	return left_most_index;
 }
 
+long long int whiteness_score(Fragment & fragment)
+{
+	long long int whiteness{};
+	long int dim{};
+	for (int i{}; i < fragment.img.rows; ++i)
+	{
+		dim += (fragment.last_pixel[i] - fragment.first_pixel[i]);
+		for (int j{ fragment.first_pixel[i] }; j < fragment.last_pixel[i]; ++j)
+		{
+			if (i == 680 and (fragment.name == "D00107" or fragment.name == "D00101"))std::cout << fragment.name << " " << i << " " << j << " " << (int)fragment.img.at<uchar>(i, j) << " " << ((fragment.last_pixel[i] + 1) - j) << " " << (int)fragment.img.at<uchar>(i, j) * ((fragment.last_pixel[i] + 1) - j) << std::endl;
+			whiteness += (int)fragment.img.at<uchar>(i, j) * ((fragment.last_pixel[i]) - j);
+
+		}
+		//std::cout << whiteness << std::endl;
+	}
+	return whiteness/dim;
+}
 

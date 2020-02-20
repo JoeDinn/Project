@@ -6,7 +6,9 @@ struct Fragment
 {
 	std::string name;
 	cv::Mat img;
-	Fragment(std::string name_, cv::Mat img_):name(name_),img(img_) {};
+	int *first_pixel;
+	int *last_pixel;
+	Fragment(std::string root_,std::string name_);
 	Fragment():name(),img() {};
 	~Fragment();
 };

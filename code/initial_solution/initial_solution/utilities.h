@@ -44,3 +44,5 @@ void log(Solution &solution);
 void shuffle(Solution &solution);
 
 int leftMost(Solution &solution);
+
+long long int whiteness_score(Fragment &fragment);
