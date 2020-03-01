@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "utilities.h"
 
+
+
 void output(Solution &solution)
 {
 	std::cout << std::endl << "Size" << solution.size() << std::endl;
@@ -70,7 +72,7 @@ long long int whiteness_score(Fragment & fragment)
 		dim += (fragment.last_pixel[i] - fragment.first_pixel[i]);
 		for (int j{ fragment.first_pixel[i] }; j < fragment.last_pixel[i]; ++j)
 		{
-			if (i == 680 and (fragment.name == "D00107" or fragment.name == "D00101"))std::cout << fragment.name << " " << i << " " << j << " " << (int)fragment.img.at<uchar>(i, j) << " " << ((fragment.last_pixel[i] + 1) - j) << " " << (int)fragment.img.at<uchar>(i, j) * ((fragment.last_pixel[i] + 1) - j) << std::endl;
+			//if (i == 680 and (fragment.name == "D00107" or fragment.name == "D00101"))std::cout << fragment.name << " " << i << " " << j << " " << (int)fragment.img.at<uchar>(i, j) << " " << ((fragment.last_pixel[i] + 1) - j) << " " << (int)fragment.img.at<uchar>(i, j) * ((fragment.last_pixel[i] + 1) - j) << std::endl;
 			whiteness += (int)fragment.img.at<uchar>(i, j) * ((fragment.last_pixel[i]) - j);
 
 		}

@@ -1,8 +1,8 @@
-﻿  utilities.cpp
-d:\project\code\initial_solution\initial_solution\utilities.cpp(34): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+﻿  Fragment.cpp
+d:\project\code\initial_solution\initial_solution\fragment.cpp(114): warning C4244: 'initializing': conversion from 'long double' to 'unsigned __int64', possible loss of data
   Generating code
-  4 of 676 functions ( 0.6%) were compiled, the rest were copied from previous compilation.
-    1 functions were new in current compilation
-    6 functions had inline decision re-evaluated but remain unchanged
+  3 of 715 functions ( 0.4%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   initial_solution.vcxproj -> D:\Project\code\initial_solution\x64\Release\initial_solution.exe

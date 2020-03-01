@@ -2,10 +2,13 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
 #include <random> // for std::mt19937
 #include <ctime> // for std::time
 #include <iostream>
 #include "Fragment.h"
+
+
 
 typedef std::vector<Fragment> Solution;
 
@@ -36,6 +39,7 @@ namespace random
 		return rand_gen(random::mersenne); // and then generate a random number from our global generator
 	}
 }
+
 
 
 void output(Solution &solution);
