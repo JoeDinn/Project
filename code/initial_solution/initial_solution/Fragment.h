@@ -2,7 +2,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
-
+#include <unordered_set>
 
 struct Fragment
 {
@@ -15,7 +15,10 @@ struct Fragment
 	int hist[256];
 	Fragment(std::string root_,std::string name_);
 	Fragment():name(),img() {};
-	void histogram();
+	void threshold();
+	void grow_region(int row, int col, int &leftmost, int & topmost, int & rightmost, int & bottommost);
+	
+	void propogate(int row, int col, std::unordered_set<int, int>& included, int & leftmost, int & topmost, int & rightmost, int & bottommost);
 	~Fragment();
 
 };

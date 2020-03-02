@@ -154,7 +154,7 @@
     <ClInclude Include="Fragment.h" />
     <ClInclude Include="greedy.h" />
     <ClInclude Include="hungarian.h" />
-    <ClInclude Include="ocr.h" />
+    <ClInclude Include="ocr_character.h" />
     <ClInclude Include="Optimiser.h" />
     <ClInclude Include="Similarity.h" />
     <ClInclude Include="sim_aneal.h" />
@@ -169,7 +169,7 @@
     <ClCompile Include="greedy.cpp" />
     <ClCompile Include="hungarian.cpp" />
     <ClCompile Include="initial_solution.cpp" />
-    <ClCompile Include="ocr.cpp" />
+    <ClCompile Include="ocr_character.cpp" />
     <ClCompile Include="Similarity.cpp" />
     <ClCompile Include="sim_aneal.cpp" />
     <ClCompile Include="stdafx.cpp">

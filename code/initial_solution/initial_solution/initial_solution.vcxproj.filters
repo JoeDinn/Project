@@ -48,7 +48,7 @@
     <ClInclude Include="greedy.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ocr.h">
+    <ClInclude Include="ocr_character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -83,7 +83,7 @@
     <ClCompile Include="Similarity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ocr.cpp">
+    <ClCompile Include="ocr_character.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -64,7 +64,7 @@ Fragment::Fragment(std::string root_,std::string name_):
 	}
 }
 
-void Fragment::histogram()
+void Fragment::threshold()
 {
 	for (int i{}; i < img.rows; ++i)
 	{
@@ -140,6 +140,16 @@ void Fragment::histogram()
 	}
 }
 
+}
+
+void Fragment::grow_region(int row, int col, int & leftmost, int & topmost, int & rightmost, int & bottommost)
+{
+	
+}
+
+
+void Fragment::propogate(int row, int col, std::unordered_set<int, int>& included, int & leftmost, int & topmost, int & rightmost, int & bottommost)
+{
 }
 
 Fragment::~Fragment()
