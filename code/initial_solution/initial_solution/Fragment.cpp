@@ -4,7 +4,7 @@
 #include <fstream>
 
 Fragment::Fragment(std::string root_,std::string name_):
-	name(name_), img(cv::imread(root_ + "/strips/" + name_ + ".png", cv::IMREAD_GRAYSCALE)), hist(), total_pixels()
+	name(name_), img(cv::imread(root_ + "/strips/" + name_ + ".png", cv::IMREAD_GRAYSCALE)), total_pixels()
 {
 	cv::Mat mask{ cv::imread(root_ + "/masks/" + name_ + ".png", cv::IMREAD_GRAYSCALE) };
 
@@ -47,47 +47,26 @@ Fragment::Fragment(std::string root_,std::string name_):
 		}
 
 	}
-	row_avg  = new long double[img.rows];
+	row_avg  = new long double[img.rows];///////////////????
 
-	//get pixel values in each row
-	for (int i{}; i < img.rows; ++i)
-	{
-		for (int j{ first_pixel[i] }; j < last_pixel[i]; ++j)
-		{
-			row_avg[i] += img.at<uchar>(i, j);
-		}
-		row_avg[i] = row_avg[i] / (last_pixel[i] - first_pixel[i]);
-		if (name == "D00107" and (i % 20 == 0))
-		{
-			//std::cout << i << " " << row_avg[i] << std::endl;
-		}
-	}
 }
 
 void Fragment::threshold()
 {
-	for (int i{}; i < img.rows; ++i)
-	{
-		for (int j{ first_pixel[i] }; j < last_pixel[i]; ++j)
-		{
-			++total_pixels;
-			uchar value = img.at<uchar>(i, j);
-			++hist[(int)value];
-		}
-	}
-	for (int i{}; i < 256; ++i)
-	{
-		//std::cout << i << " " << hist[i] << std::endl;
-	}
-	std::ofstream f("out.txt");
+	std::ofstream f("out.txt");/////////
+	int hist[256]{};
+	colour_histogram(hist);
+	
 
-	if (f.is_open())
+	if (f.is_open())//////////
 	{
+		int total_pixels{};
 		for (int i{}; i < 256; ++i)
 		{
+			total_pixels += hist[i];
 			f << hist[i] << std::endl;
 		}
-		f << "Total " << total_pixels << std::endl;
+		f << "Total " << total_pixels << std::endl;//////////
 
 		//Get threshold using otsu
 
@@ -113,7 +92,7 @@ void Fragment::threshold()
 
 				unsigned long long intra_class_var = weight_lower * weight_upper * pow(mean_lower - mean_upper, 2);
 
-				f << current_threshold << " " << intra_class_var << std::endl;
+				f << current_threshold << " " << intra_class_var << std::endl;//////////
 
 				if (intra_class_var >= maximum_intra_class_var)
 				{
@@ -125,9 +104,9 @@ void Fragment::threshold()
 			sum_lower = sum_lower + (current_threshold *  hist[current_threshold]);
 
 		}
-		f << "threshold " << best_threshold << std::endl;
+		f << "threshold " << best_threshold << std::endl;////////
 	
-	f.close();
+	f.close();////////////
 	//threshold
 
 	for (int i{}; i < img.rows; ++i)
@@ -145,6 +124,38 @@ void Fragment::threshold()
 void Fragment::grow_region(int row, int col, int & leftmost, int & topmost, int & rightmost, int & bottommost)
 {
 	
+}
+
+void Fragment::colour_histogram(int hist[256])
+{
+
+	//get pixel values in each row
+	for (int row{}; row < img.rows; ++row)
+	{
+		for (int col{ first_pixel[row] }; col < last_pixel[row]; ++col)
+		{
+			++hist[(int)img.at<uchar>(row, col)];
+		}
+		
+	}
+	
+}
+
+void Fragment::get_text_lines(bool *is_text_line)
+{
+	for (int row{}; row < img.rows; ++row)
+	{
+		is_text_line[row] = false;
+		for (int col{ first_pixel[row] }; col < last_pixel[row]; ++col)
+		{
+			if ((int)img.at<uchar>(row, col) == 0)
+			{
+				is_text_line[row] = true;
+				//std::cout << name  << ": Row " << row << "Has pixels (first at: " << col << " )" << std::endl;
+				break;
+			}
+		}
+	}
 }
 
 

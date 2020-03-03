@@ -12,12 +12,13 @@ struct Fragment
 	int *last_pixel;
 	int total_pixels;
 	long double *row_avg;
-	int hist[256];
+	
 	Fragment(std::string root_,std::string name_);
 	Fragment():name(),img() {};
 	void threshold();
 	void grow_region(int row, int col, int &leftmost, int & topmost, int & rightmost, int & bottommost);
-	
+	void colour_histogram(int hist[256]);
+	void get_text_lines(bool *is_text_line);
 	void propogate(int row, int col, std::unordered_set<int, int>& included, int & leftmost, int & topmost, int & rightmost, int & bottommost);
 	~Fragment();
 
