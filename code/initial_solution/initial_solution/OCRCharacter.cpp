@@ -1,26 +1,32 @@
 #include "stdafx.h"
 #include "OCRCharacter.h"
 
+#define DEBUG
 
 long double OCRCharacter::cost(Fragment &left_image, Fragment &right_image)
 {
+
 	std::vector<cv::Mat> characters{};
 	cv::Mat left_visited(left_image.img.rows, left_image.img.cols, left_image.img.type(), 0.0);
 	cv::Mat right_visited(right_image.img.rows, right_image.img.cols, right_image.img.type(), 0.0);
-
-
+	
 	//Threshold images
 	left_image.threshold();
 	right_image.threshold();
-	cv::imwrite("D:/ocr/testthresh.png", left_image.img);/////
-	//Get row sums
 
+	//Get row sums
 	bool *left_is_text_line{new bool[left_image.img.rows]};
 	left_image.get_text_lines(left_is_text_line);
+
+#ifdef DEBUG
+	cv::Mat visualise_img{};
+	cv::hconcat(left_image.img, right_image.img, visualise_img);
+	cvtColor(visualise_img, visualise_img, cv::COLOR_GRAY2RGB);
 	std::cout << "row 620: " << left_is_text_line[369] << std::endl;///////
 	bool *right_is_text_line{ new bool[right_image.img.rows] };
 	right_image.get_text_lines(right_is_text_line);
-	
+#endif // DEBUG
+		
 	
 	//Find tops and bottoms of lines in left (iterate down histogram until find black)
 	for (int row = 0; row < left_image.img.rows; row++)
@@ -29,67 +35,78 @@ long double OCRCharacter::cost(Fragment &left_image, Fragment &right_image)
 		//If there are black pixels in the row
 		if (left_is_text_line[row])
 		{
-			int top{ row };
-
-			int left{ left_image.last_pixel[row] - 1 };
-			int right{ left_image.last_pixel[row] - 1 };
+			
+			int left_img_left{ left_image.last_pixel[row] - 1 };
+			int left_img_right{ left_image.last_pixel[row] - 1 };
+			int left_img_top{ row };
+			int left_img_bottom;
+			int left_img_height;
 
 			int right_img_left;
 			int right_img_right;
+			int right_img_top;
+			int	right_img_bottom;
+			int right_img_height;
+
 			bool found{ false };
 			bool right_found{ false };
 			while (left_is_text_line[row])
 			{
-				
 				//If char overlaps edge
 				if (left_image(row, left_image.last_pixel[row] - 1) == 0 and not(found))
 				{
 					std::cout << row << " " << left_image.last_pixel[row] - 1 << " " << (int)left_image(row, left_image.last_pixel[row] - 1) << " "  << std::endl;
 					found = true;
 					//Fit box to left hand char (l and r)
-					grow_region(left_image, left_visited, row, left_image.last_pixel[row] - 1, left, right);
-					std::cout << "fin " << row << " Left: " << left << " Right: " << right << std::endl;
-					//Find right hand half of char
-					//For now just assume same box
-					right_img_left = right_image.first_pixel[row];
-					right_img_right = right_image.first_pixel[row] + abs(right-left);
-					right_found = true;
+					grow_region(left_image, left_visited, row, left_image.last_pixel[row] - 1, left_img_left, left_img_right);
+#ifdef DEBUG
+					std::cout << "fin " << row << " Left: " << left_img_left << " Right: " << left_img_right << std::endl;
+					
+#endif // DEBUG
 				}
 				++row;
 			}
-			if (found and right_found)
+			if (found)//If a character is found that overlaps the edge on the right
 			{
-				int bottom{ row - 1 };
+				//Find right hand half of charcter
+				//For now just assume same box
+				for (size_t i = 0; i < length; i++)
+				{
 
-				std::cout << "Left box: " << left << " " << right << " " << top << " " << bottom << std::endl;
-				std::cout << "right box: " << right_img_left << " " << right_img_right << " " << top << " " << bottom << std::endl;
+				}
+				right_img_left = right_image.first_pixel[row];
+				right_img_right = right_image.first_pixel[row] + abs(left_img_right - left_img_left);
+				right_img_top = left_img_top;
+				right_found = true;
 
+
+
+
+
+				left_img_height = (row - 1) - left_img_top;
+				left_img_bottom = left_img_top + MAX(left_img_height, right_img_height);
+				right_img_bottom = right_img_top + MAX(left_img_height, right_img_height);
+#ifdef DEBUG
+				std::cout << "Left box: " << left_img_left << " " << left_img_right << " " << left_img_top << " " << left_img_bottom << std::endl;
+				std::cout << "right box: " << right_img_left << " " << right_img_right << " " << left_img_top << " " << left_img_bottom << std::endl;
+				std::cout << "                  " << cv::Point(left_img_top, left_img_left) << " " << cv::Point(left_img_bottom, left_img_right) << std::endl;
+				cv::rectangle(visualise_img, cv::Point(left_img_left, left_img_top), cv::Point(left_img_right, left_img_bottom), CV_RGB(255, 0, 0), 1,  8,  0);
+				cv::rectangle(visualise_img, cv::Point(right_img_left + left_image.img.cols, right_img_top), cv::Point(right_img_right + left_image.img.cols, right_img_bottom), CV_RGB(255, 0, 0), 1, 8, 0);
+#endif // DEBUG
 				//join boxes and add to vector
 				cv::Mat left_half(
 					left_image.img,
-					cv::Range(top, bottom + 1), // rows
-					cv::Range(left, right + 1));// cols
+					cv::Range(left_img_top, left_img_bottom + 1), // rows
+					cv::Range(left_img_left, left_img_right + 1));// cols
 
 				cv::Mat right_half(
 					right_image.img,
-					cv::Range(top, bottom + 1), // rows
+					cv::Range(right_img_top, right_img_bottom + 1), // rows
 					cv::Range(right_img_left, right_img_right + 1));// cols
 
 				cv::Mat whole;
 				cv::hconcat(left_half, right_half, whole);
-				/*
-				cv::namedWindow("left_half");///////
-				cv::imshow("left_half", left_half);////////
 
-				cv::namedWindow("right_half");///////
-				cv::imshow("right_half", right_half);////////
-
-				cv::namedWindow("whole");///////
-				cv::imshow("whole", whole);////////
-				cv::waitKey();
-				
-				std::cout << whole.size << std::endl;
-				*/
 				std::cout << characters.size() << " Characters found so far" << std::endl;
 				characters.emplace_back(whole);
 			}
@@ -98,10 +115,22 @@ long double OCRCharacter::cost(Fragment &left_image, Fragment &right_image)
 	//for each combined image
 	//character_score(image)
 	//sum wordscores
+#ifdef DEBUG
 	std::cout << characters.size() << " Characters found" << std::endl;
 	cv::namedWindow("Firstimage");///////
 	cv::imshow("Firstimage", characters[0]);////////
+	cv::namedWindow("visualise", cv::WINDOW_NORMAL);///////
+	cv::imshow("visualise", visualise_img);////////
+	cv::imwrite("D:/ocr/foundchars.png", visualise_img);
 	cv::waitKey();
+
+#endif // DEBUG
+
+	
+
+
+
+
 
 	long int total_score{};
 	for (cv::Mat character : characters)
@@ -138,11 +167,9 @@ int OCRCharacter::char_score(cv::Mat &image)
 
 void OCRCharacter::grow_region(Fragment &image, cv::Mat &visited, int row, int col, int &left_most, int &right_most)
 {
-	//std::cout << row << " " << col << std::endl;
 	if(col < image.last_pixel[row] and col >= image.first_pixel[row])
 		if (image(row, col) == 0 and visited.at<uchar>(row, col) == 0)
 		{
-			//std::cout << "grow: " << row << " " << col << std::endl;
 			visited.at<uchar>(row, col) = 1;
 			
 			if (col > right_most)

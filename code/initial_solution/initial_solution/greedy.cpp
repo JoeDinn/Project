@@ -16,7 +16,10 @@ Solution Greedy::optimise(Solution fragments)
 	//find left_most
 	int current{ left_most(fragments) };
 	indexes.remove(current);
+#ifdef DEBUG
 	std::cout << "Start " << fragments[current].name << std::endl;
+#endif // DEBUG
+		
 	optimal_solution[0] = fragments[current];
 	//Find best neighbour from remaining fragments
 
@@ -33,7 +36,9 @@ Solution Greedy::optimise(Solution fragments)
 				best_score = current_score;
 			}
 		}
+#ifdef DEBUG
 		std::cout << fragments[current].name << " " << fragments[best_index].name << std::endl;
+#endif// DEBUG
 		optimal_solution[i] = fragments[best_index];
 		current = best_index;
 		indexes.remove(current);

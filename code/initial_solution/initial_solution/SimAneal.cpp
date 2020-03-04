@@ -20,7 +20,9 @@ Solution SimAneal::optimise(Solution fragments)
 {
 	Solution current_solution{ fragments };
 	double current_cost{ get_initial_cost(current_solution) };
+#ifdef DEBUG
 	std::cout << "At start " << current_cost << std::endl;
+#endif // DEBUG
 	double temperature{ initial_temperature };
 	
 	Solution best_solution{ current_solution };
@@ -61,7 +63,9 @@ Solution SimAneal::optimise(Solution fragments)
 		}
 		temperature -= (cooling_factor * initial_temperature);
 	}
+#ifdef DEBUG
 	std::cout << "At end " << best_cost << std::endl;
+#endif // DEBUG
 	return best_solution;
 }
 

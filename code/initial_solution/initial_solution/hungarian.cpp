@@ -59,7 +59,9 @@ Solution Hungarian::optimise(Solution fragments)
 
 
 		 int j = row_in_solution[i];
+#ifdef DEBUG
 		 std::cout << i << " " << j << " " << assign_cost[i][j] << " " << min << std::endl;
+#endif // DEBUG
 	 }
 
 	 

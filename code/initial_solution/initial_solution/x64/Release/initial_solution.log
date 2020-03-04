@@ -1,21 +1,7 @@
-﻿  DiffSquared.cpp
-d:\project\code\initial_solution\initial_solution\diffsquared.cpp(17): warning C4101: 'e': unreferenced local variable
-  EdgeDistance.cpp
-  Greedy.cpp
-  Hungarian.cpp
-d:\project\code\initial_solution\initial_solution\hungarian.cpp(343): warning C4244: 'return': conversion from 'cost' to 'int', possible loss of data
-  Main.cpp
-  OCRCharacter.cpp
-  SimAneal.cpp
-d:\project\code\initial_solution\initial_solution\simaneal.cpp(35): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-d:\project\code\initial_solution\initial_solution\simaneal.cpp(87): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-  Similarity.cpp
-d:\project\code\initial_solution\initial_solution\similarity.cpp(10): warning C4101: 'e': unreferenced local variable
-  utilities.cpp
-d:\project\code\initial_solution\initial_solution\utilities.cpp(36): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+﻿  OCRCharacter.cpp
   Generating code
-  60 of 756 functions ( 7.9%) were compiled, the rest were copied from previous compilation.
-    3 functions were new in current compilation
-    3 functions had inline decision re-evaluated but remain unchanged
+  1 of 806 functions ( 0.1%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   initial_solution.vcxproj -> D:\Project\code\initial_solution\x64\Release\initial_solution.exe

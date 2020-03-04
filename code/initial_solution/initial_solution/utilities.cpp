@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "utilities.h"
-
-
+#define DEBUG
 
 void output(Solution &solution)
 {
@@ -35,37 +34,14 @@ void shuffle(Solution & solution)
 	{
 		int j{ random::rand_int(i,solution.size()-1)};
 		std::swap(solution[i], solution[j]);
+#ifdef DEBUG
 		std::cout << i << " <--> " << j << std::endl;
+#endif // DEBUG
 	}
+#ifdef DEBUG
 	std::cout << "done\n";
+#endif // DEBUG
 }
-
-Solution load_from_file(std::string root)
-{
-
-	std::ifstream file(root + "/" + root + ".txt");
-	std::string str;
-	std::getline(file, str);
-	std::cout << str << std::endl;
-
-
-	int number_files = std::stoi(str);
-	Solution images(number_files);
-	int image_counter = 0;
-	while (std::getline(file, str))
-	{
-		images[image_counter] = Fragment(root, str); // read the file
-		if (images[image_counter].img.empty()) // check for invalid input
-		{
-			std::cout << "could not open or find the image" << std::endl;
-		}
-
-		++image_counter;
-	}
-	return images;
-}
-
-
 
 
 
@@ -84,7 +60,9 @@ int left_most(Solution & solution)
 			best_whiteness = whiteness;
 		}
 	}
+#ifdef DEBUG
 	std::cout << "Best: " << solution[left_most_index].name << " " << best_whiteness << std::endl;
+#endif // DEBUG
 	return left_most_index;
 }
 

@@ -154,6 +154,8 @@
     <ClInclude Include="Fragment.h" />
     <ClInclude Include="Greedy.h" />
     <ClInclude Include="Hungarian.h" />
+    <ClInclude Include="Metric.h" />
+    <ClInclude Include="neighbour_comparison.h" />
     <ClInclude Include="OCRCharacter.h" />
     <ClInclude Include="Optimiser.h" />
     <ClInclude Include="Similarity.h" />
@@ -169,6 +171,8 @@
     <ClCompile Include="Greedy.cpp" />
     <ClCompile Include="Hungarian.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Metric.cpp" />
+    <ClCompile Include="neighbour_comparison.cpp" />
     <ClCompile Include="OCRCharacter.cpp" />
     <ClCompile Include="Similarity.cpp" />
     <ClCompile Include="SimAneal.cpp" />

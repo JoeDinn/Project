@@ -8,8 +8,8 @@ DiffSquared::DiffSquared()
 
 long double DiffSquared::cost(Fragment &left_image, Fragment &right_image)
 {
-	assert(left_image.img.rows == right_image.img.rows);
-	assert(left_image.img.cols == right_image.img.cols);
+	assert(left_image.image.rows == right_image.image.rows);
+	assert(left_image.image.cols == right_image.image.cols);
 	try
 	{
 		return LU_table.at(left_image.name + right_image.name);
@@ -17,18 +17,18 @@ long double DiffSquared::cost(Fragment &left_image, Fragment &right_image)
 	catch (const std::out_of_range &e)
 	{
 		double difference{};
-		for (int i = 0; i < left_image.img.rows; i++)
+		for (int i = 0; i < left_image.image.rows; i++)
 		{
-			for (int j = 0; j < left_image.img.cols; j++)//change to min size from last/first
+			for (int j = 0; j < left_image.image.cols; j++)//change to min size from last/first
 			{
-				double pixel_difference = left_image(i,j) - right_image(i,right_image.img.cols);
+				double pixel_difference = left_image(i,j) - right_image(i,right_image.image.cols);
 				difference += pow(pixel_difference, 2);
 			}
 		}
 		difference = sqrt(difference);
 		LU_table.emplace(left_image.name + right_image.name, difference);
 		return  difference;
-		//std::cout << img.at<uchar>(i, j) << std::endl;
+		//std::cout << image.at<uchar>(i, j) << std::endl;
 	}
 }
 
