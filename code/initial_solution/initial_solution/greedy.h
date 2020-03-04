@@ -1,12 +1,12 @@
 #pragma once
 #include "Optimiser.h"
 #include <list>
-class greedy :
+class Greedy :
 	public Optimiser
 {
 public:
-	greedy(Similarity &similarity_);
+	Greedy(Similarity &similarity_);
 	Solution optimise(Solution fragments);
-	~greedy();
+	~Greedy();
 };
 

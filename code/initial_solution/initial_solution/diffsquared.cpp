@@ -1,38 +1,38 @@
 #include "stdafx.h"
-#include "diffsquared.h"
+#include "DiffSquared.h"
 
 
-diffsquared::diffsquared()
+DiffSquared::DiffSquared()
 {
 }
 
-long double diffsquared::cost(Fragment &leftImage, Fragment &rightImage)
+long double DiffSquared::cost(Fragment &left_image, Fragment &right_image)
 {
-	assert(leftImage.img.rows == rightImage.img.rows);
-	assert(leftImage.img.cols == rightImage.img.cols);
+	assert(left_image.img.rows == right_image.img.rows);
+	assert(left_image.img.cols == right_image.img.cols);
 	try
 	{
-		return LUTable.at(leftImage.name + rightImage.name);
+		return LU_table.at(left_image.name + right_image.name);
 	}
 	catch (const std::out_of_range &e)
 	{
 		double difference{};
-		for (int i = 0; i < leftImage.img.rows; i++)
+		for (int i = 0; i < left_image.img.rows; i++)
 		{
-			for (int j = 0; j < leftImage.img.cols; j++)//change to min size from last/first
+			for (int j = 0; j < left_image.img.cols; j++)//change to min size from last/first
 			{
-				double pixel_difference = leftImage.img.at<uchar>(i, j) - rightImage.img.at<uchar>(i, rightImage.img.cols - j);
+				double pixel_difference = left_image(i,j) - right_image(i,right_image.img.cols);
 				difference += pow(pixel_difference, 2);
 			}
 		}
 		difference = sqrt(difference);
-		LUTable.emplace(leftImage.name + rightImage.name, difference);
+		LU_table.emplace(left_image.name + right_image.name, difference);
 		return  difference;
 		//std::cout << img.at<uchar>(i, j) << std::endl;
 	}
 }
 
 
-diffsquared::~diffsquared()
+DiffSquared::~DiffSquared()
 {
 }

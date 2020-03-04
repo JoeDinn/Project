@@ -4,9 +4,11 @@
 #include <fstream>
 
 Fragment::Fragment(std::string root_,std::string name_):
-	name(name_), img(cv::imread(root_ + "/strips/" + name_ + ".png", cv::IMREAD_GRAYSCALE)), total_pixels()
+	name(name_), img(cv::imread(root_ + "/strips/" + name_ + ".png", cv::IMREAD_GRAYSCALE)), total_pixels() 
+
 {
 	cv::Mat mask{ cv::imread(root_ + "/masks/" + name_ + ".png", cv::IMREAD_GRAYSCALE) };
+
 
 	//Find first and last pixels
 	first_pixel = new int[img.rows];
@@ -47,9 +49,20 @@ Fragment::Fragment(std::string root_,std::string name_):
 		}
 
 	}
-	row_avg  = new long double[img.rows];///////////////????
-
 }
+
+Fragment::Fragment(const Fragment & fragment) :
+	img(fragment.img), name(fragment.name), first_pixel(fragment.first_pixel), last_pixel(fragment.last_pixel), total_pixels()
+{
+}
+
+
+Fragment::Fragment() :
+	total_pixels()
+{
+}
+
+
 
 void Fragment::threshold()
 {
@@ -113,7 +126,7 @@ void Fragment::threshold()
 	{
 		for (int j{ first_pixel[i] }; j < last_pixel[i]; ++j)
 		{
-			img.at<uchar>(i, j) = ((int)img.at<uchar>(i, j) < best_threshold) ? 0 : 255;
+			(*this)(i, j) = ((int)(*this)(i, j) < best_threshold) ? 0 : 255;
 
 		}
 	}
@@ -121,10 +134,7 @@ void Fragment::threshold()
 
 }
 
-void Fragment::grow_region(int row, int col, int & leftmost, int & topmost, int & rightmost, int & bottommost)
-{
-	
-}
+
 
 void Fragment::colour_histogram(int hist[256])
 {
@@ -134,7 +144,7 @@ void Fragment::colour_histogram(int hist[256])
 	{
 		for (int col{ first_pixel[row] }; col < last_pixel[row]; ++col)
 		{
-			++hist[(int)img.at<uchar>(row, col)];
+			++hist[(int)(*this)(row, col)];
 		}
 		
 	}
@@ -148,7 +158,7 @@ void Fragment::get_text_lines(bool *is_text_line)
 		is_text_line[row] = false;
 		for (int col{ first_pixel[row] }; col < last_pixel[row]; ++col)
 		{
-			if ((int)img.at<uchar>(row, col) == 0)
+			if ((int)(*this)(row, col) == 0)
 			{
 				is_text_line[row] = true;
 				//std::cout << name  << ": Row " << row << "Has pixels (first at: " << col << " )" << std::endl;
@@ -159,10 +169,12 @@ void Fragment::get_text_lines(bool *is_text_line)
 }
 
 
-void Fragment::propogate(int row, int col, std::unordered_set<int, int>& included, int & leftmost, int & topmost, int & rightmost, int & bottommost)
-{
-}
-
 Fragment::~Fragment()
 {
 }
+
+uchar & Fragment::operator()(int row, int col)
+{
+	return img.at<uchar>(row, col);
+}
+

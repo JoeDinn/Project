@@ -1,16 +1,16 @@
 #include "stdafx.h"
 #include "Similarity.h"
 
-long double Similarity::compare(Fragment & leftImage, Fragment & rightImage)
+long double Similarity::compare(Fragment & left_image, Fragment & right_image)
 {
 	try
 	{
-		return LUTable.at(leftImage.name + rightImage.name);
+		return LU_table.at(left_image.name + right_image.name);
 	}
 	catch (const std::out_of_range &e)
 	{
-		long double distance_cost{cost(leftImage,rightImage)};
-		LUTable.emplace(leftImage.name + rightImage.name, distance_cost);
+		long double distance_cost{cost(left_image,right_image)};
+		LU_table.emplace(left_image.name + right_image.name, distance_cost);
 		return  distance_cost;
 	}
 }

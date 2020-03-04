@@ -4,8 +4,8 @@
 class Similarity
 {
 protected:
-	std::unordered_map<std::string, long double> LUTable;
-	virtual long double cost(Fragment &leftImage, Fragment &rightImage) = 0;
+	std::unordered_map<std::string, long double> LU_table;
+	virtual long double cost(Fragment &left_image, Fragment &right_image) = 0;
 public:
-	virtual long double compare(Fragment &leftImage, Fragment &rightImage);
+	virtual long double compare(Fragment &left_image, Fragment &right_image);
 };

@@ -1,25 +1,25 @@
 #include "stdafx.h"
-#include "hungarian.h"
+#include "Hungarian.h"
 #include <limits> 
 
-hungarian::hungarian(Similarity &similarity_):
+Hungarian::Hungarian(Similarity &similarity_):
 	Optimiser(similarity_)
 {
 }
 
-Solution hungarian::optimise(Solution fragments)
+Solution Hungarian::optimise(Solution fragments)
 {
 	//Formulate problem
 	int dim{ (int)fragments.size() };
 
-	col *rowsol{ new col[dim] };
-	row *colsol{ new row[dim] };
+	col *row_in_solution{ new col[dim] };
+	row *col_in_sol{ new row[dim] };
 	cost *u{ new cost[dim] };
 	cost *v{ new cost[dim] };
 
-	cost **assigncost{ new cost*[dim] };
+	cost **assign_cost{ new cost*[dim] };
 	for (int i = 0; i < dim; i++)
-		assigncost[i] = new cost[dim];
+		assign_cost[i] = new cost[dim];
 
 	for (int i = 0; i < dim; i++)
 	{
@@ -27,16 +27,16 @@ Solution hungarian::optimise(Solution fragments)
 		{
 			if (i == j)
 			{
-				assigncost[i][j] = BIG;
+				assign_cost[i][j] = BIG;
 			}
 			else
 			{
-				assigncost[i][j] = similarity.compare(fragments[i], fragments[j]);
+				assign_cost[i][j] = similarity.compare(fragments[i], fragments[j]);
 			}
 		}
 	}
 
-	 lap(dim,assigncost,rowsol,colsol,u,v);
+	 lap(dim,assign_cost, row_in_solution, col_in_sol,u,v);
 
 	 Solution solved(fragments.size());
 
@@ -45,7 +45,7 @@ Solution hungarian::optimise(Solution fragments)
 	 for (int i = 1; i < dim; i++)
 	 {
 		 std::cout << current_index << std::endl;
-		 current_index = rowsol[current_index];
+		 current_index = row_in_solution[current_index];
 		 solved[current_index] = fragments[current_index];
 	 }
 
@@ -54,12 +54,12 @@ Solution hungarian::optimise(Solution fragments)
 		 double min = BIG;
 		 for (int f = 0; f < dim; f++)
 		 {
-			 min = MIN(min, assigncost[i][f]);
+			 min = MIN(min, assign_cost[i][f]);
 		 }
 
 
-		 int j = rowsol[i];
-		 std::cout << i << " " << j << " " << assigncost[i][j] << " " << min << std::endl;
+		 int j = row_in_solution[i];
+		 std::cout << i << " " << j << " " << assign_cost[i][j] << " " << min << std::endl;
 	 }
 
 	 
@@ -67,12 +67,12 @@ Solution hungarian::optimise(Solution fragments)
 }
 
 
-hungarian::~hungarian()
+Hungarian::~Hungarian()
 {
 }
 
 
-int hungarian::lap(int dim,
+int Hungarian::lap(int dim,
 	cost **assigncost,
 	col *rowsol,
 	row *colsol,

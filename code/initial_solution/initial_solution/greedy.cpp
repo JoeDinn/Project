@@ -1,20 +1,20 @@
 #include "stdafx.h"
-#include "greedy.h"
+#include "Greedy.h"
 
 
-greedy::greedy(Similarity &similarity_):
+Greedy::Greedy(Similarity &similarity_):
 	Optimiser(similarity_)
 {
 }
 
-Solution greedy::optimise(Solution fragments)
+Solution Greedy::optimise(Solution fragments)
 {
 	//list of indexs
 	std::list<int> indexes{};
 	for (int i{}; i < fragments.size(); ++i) indexes.push_back(i);
 	Solution optimal_solution(fragments.size());
-	//find leftmost
-	int current{ leftMost(fragments) };
+	//find left_most
+	int current{ left_most(fragments) };
 	indexes.remove(current);
 	std::cout << "Start " << fragments[current].name << std::endl;
 	optimal_solution[0] = fragments[current];
@@ -45,6 +45,6 @@ Solution greedy::optimise(Solution fragments)
 }
 
 
-greedy::~greedy()
+Greedy::~Greedy()
 {
 }

@@ -40,11 +40,36 @@ void shuffle(Solution & solution)
 	std::cout << "done\n";
 }
 
+Solution load_from_file(std::string root)
+{
+
+	std::ifstream file(root + "/" + root + ".txt");
+	std::string str;
+	std::getline(file, str);
+	std::cout << str << std::endl;
+
+
+	int number_files = std::stoi(str);
+	Solution images(number_files);
+	int image_counter = 0;
+	while (std::getline(file, str))
+	{
+		images[image_counter] = Fragment(root, str); // read the file
+		if (images[image_counter].img.empty()) // check for invalid input
+		{
+			std::cout << "could not open or find the image" << std::endl;
+		}
+
+		++image_counter;
+	}
+	return images;
+}
 
 
 
 
-int leftMost(Solution & solution)
+
+int left_most(Solution & solution)
 {
 	int left_most_index{};
 	long long  best_whiteness{};
@@ -72,8 +97,8 @@ long long int whiteness_score(Fragment & fragment)
 		dim += (fragment.last_pixel[i] - fragment.first_pixel[i]);
 		for (int j{ fragment.first_pixel[i] }; j < fragment.last_pixel[i]; ++j)
 		{
-			//if (i == 680 and (fragment.name == "D00107" or fragment.name == "D00101"))std::cout << fragment.name << " " << i << " " << j << " " << (int)fragment.img.at<uchar>(i, j) << " " << ((fragment.last_pixel[i] + 1) - j) << " " << (int)fragment.img.at<uchar>(i, j) * ((fragment.last_pixel[i] + 1) - j) << std::endl;
-			whiteness += (int)fragment.img.at<uchar>(i, j) * ((fragment.last_pixel[i]) - j);
+			//if (i == 680 and (fragment.name == "D00107" or fragment.name == "D00101"))std::cout << fragment.name << " " << i << " " << j << " " << (int)fragment(i, j) << " " << ((fragment.last_pixel[i] + 1) - j) << " " << (int)fragment(i, j) * ((fragment.last_pixel[i] + 1) - j) << std::endl;
+			whiteness += (int)fragment(i, j) * ((fragment.last_pixel[i]) - j);
 
 		}
 		//std::cout << whiteness << std::endl;

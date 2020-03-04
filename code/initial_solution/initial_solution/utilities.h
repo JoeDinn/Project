@@ -6,6 +6,7 @@
 #include <random> // for std::mt19937
 #include <ctime> // for std::time
 #include <iostream>
+#include <fstream>
 #include "Fragment.h"
 
 
@@ -46,7 +47,7 @@ void output(Solution &solution);
 void log(Solution &solution);
 
 void shuffle(Solution &solution);
-
-int leftMost(Solution &solution);
+Solution load_from_file(std::string root);
+int left_most(Solution &solution);
 
 long long int whiteness_score(Fragment &fragment);

@@ -149,29 +149,29 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="diffsquared.h" />
-    <ClInclude Include="edge_distance.h" />
+    <ClInclude Include="DiffSquared.h" />
+    <ClInclude Include="EdgeDistance.h" />
     <ClInclude Include="Fragment.h" />
-    <ClInclude Include="greedy.h" />
-    <ClInclude Include="hungarian.h" />
-    <ClInclude Include="ocr_character.h" />
+    <ClInclude Include="Greedy.h" />
+    <ClInclude Include="Hungarian.h" />
+    <ClInclude Include="OCRCharacter.h" />
     <ClInclude Include="Optimiser.h" />
     <ClInclude Include="Similarity.h" />
-    <ClInclude Include="sim_aneal.h" />
+    <ClInclude Include="SimAneal.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="utilities.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="diffsquared.cpp" />
-    <ClCompile Include="edge_distance.cpp" />
+    <ClCompile Include="DiffSquared.cpp" />
+    <ClCompile Include="EdgeDistance.cpp" />
     <ClCompile Include="Fragment.cpp" />
-    <ClCompile Include="greedy.cpp" />
-    <ClCompile Include="hungarian.cpp" />
-    <ClCompile Include="initial_solution.cpp" />
-    <ClCompile Include="ocr_character.cpp" />
+    <ClCompile Include="Greedy.cpp" />
+    <ClCompile Include="Hungarian.cpp" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="OCRCharacter.cpp" />
     <ClCompile Include="Similarity.cpp" />
-    <ClCompile Include="sim_aneal.cpp" />
+    <ClCompile Include="SimAneal.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

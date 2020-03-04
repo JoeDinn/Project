@@ -2,12 +2,12 @@
 #include "Similarity.h"
 #include <unordered_map>
 
-class diffsquared :
+class DiffSquared :
 	public Similarity
 
 {
 public:
-	diffsquared();
-	long double cost(Fragment &leftImage, Fragment &rightImage);
-	~diffsquared();
+	DiffSquared();
+	long double cost(Fragment &left_image, Fragment &right_image);
+	~DiffSquared();
 };
