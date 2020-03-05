@@ -20,8 +20,9 @@ header file for LAP
 /*************** TYPES      *******************/
 
 typedef int row;
+typedef long double cost_value;
 typedef int col;
-typedef long double cost;
+
 
 
 
@@ -34,7 +35,7 @@ public:
 	std::unordered_map<std::string, double> LU_table;
 	Hungarian(Similarity &similarity_);
 	Solution optimise(Solution fragments);
-	int lap(int dim,cost **assigncost,col *rowsol,row *colsol,cost *u,cost *v);
+	int lap(int dim,cost_value **assigncost_value,col *rowsol,row *colsol,cost_value *u,cost_value *v);
 	~Hungarian();
 };
 

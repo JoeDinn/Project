@@ -14,12 +14,12 @@ Solution Hungarian::optimise(Solution fragments)
 
 	col *row_in_solution{ new col[dim] };
 	row *col_in_sol{ new row[dim] };
-	cost *u{ new cost[dim] };
-	cost *v{ new cost[dim] };
+	cost_value *u{ new cost_value[dim] };
+	cost_value *v{ new cost_value[dim] };
 
-	cost **assign_cost{ new cost*[dim] };
+	cost_value **assign_cost_value{ new cost_value*[dim] };
 	for (int i = 0; i < dim; i++)
-		assign_cost[i] = new cost[dim];
+		assign_cost_value[i] = new cost_value[dim];
 
 	for (int i = 0; i < dim; i++)
 	{
@@ -27,16 +27,16 @@ Solution Hungarian::optimise(Solution fragments)
 		{
 			if (i == j)
 			{
-				assign_cost[i][j] = BIG;
+				assign_cost_value[i][j] = BIG;
 			}
 			else
 			{
-				assign_cost[i][j] = similarity.compare(fragments[i], fragments[j]);
+				assign_cost_value[i][j] = similarity.compare(fragments[i], fragments[j]);
 			}
 		}
 	}
 
-	 lap(dim,assign_cost, row_in_solution, col_in_sol,u,v);
+	 lap(dim,assign_cost_value, row_in_solution, col_in_sol,u,v);
 
 	 Solution solved(fragments.size());
 
@@ -54,13 +54,13 @@ Solution Hungarian::optimise(Solution fragments)
 		 double min = BIG;
 		 for (int f = 0; f < dim; f++)
 		 {
-			 min = MIN(min, assign_cost[i][f]);
+			 min = MIN(min, assign_cost_value[i][f]);
 		 }
 
 
 		 int j = row_in_solution[i];
 #ifdef DEBUG
-		 std::cout << i << " " << j << " " << assign_cost[i][j] << " " << min << std::endl;
+		 std::cout << i << " " << j << " " << assign_cost_value[i][j] << " " << min << std::endl;
 #endif // DEBUG
 	 }
 
@@ -75,15 +75,15 @@ Hungarian::~Hungarian()
 
 
 int Hungarian::lap(int dim,
-	cost **assigncost,
+	cost_value **assigncost_value,
 	col *rowsol,
 	row *colsol,
-	cost *u,
-	cost *v)
+	cost_value *u,
+	cost_value *v)
 
 	// input:
 	// dim        - problem size
-	// assigncost - cost matrix
+	// assigncost_value - cost_value matrix
 
 	// output:
 	// rowsol     - column assigned to row in solution
@@ -95,12 +95,12 @@ int Hungarian::lap(int dim,
 	bool unassignedfound;
 	row  i, imin, numfree = 0, prvnumfree, f, i0, k, freerow, *pred, *free;
 	col  j, j1, j2, endofpath, last, low, up, *collist, *matches;
-	cost min, h, umin, usubmin, v2, *d;
+	cost_value min, h, umin, usubmin, v2, *d;
 
 	free = new row[dim];       // list of unassigned rows.
 	collist = new col[dim];    // list of columns to be scanned in various ways.
 	matches = new col[dim];    // counts how many times a row could be assigned.
-	d = new cost[dim];         // 'cost-distance' in augmenting path calculation.
+	d = new cost_value[dim];         // 'cost_value-distance' in augmenting path calculation.
 	pred = new row[dim];       // row-predecessor of column in augmenting/alternating path.
 
 							   // init how many times a row will be assigned in the column reduction.
@@ -110,13 +110,13 @@ int Hungarian::lap(int dim,
 	// COLUMN REDUCTION 
 	for (j = dim - 1; j >= 0; j--)    // reverse order gives better results.
 	{
-		// find minimum cost over rows.
-		min = assigncost[0][j];
+		// find minimum cost_value over rows.
+		min = assigncost_value[0][j];
 		imin = 0;
 		for (i = 1; i < dim; i++)
-			if (assigncost[i][j] < min)
+			if (assigncost_value[i][j] < min)
 			{
-				min = assigncost[i][j];
+				min = assigncost_value[i][j];
 				imin = i;
 			}
 		v[j] = min;
@@ -142,8 +142,8 @@ int Hungarian::lap(int dim,
 				min = BIG;
 				for (j = 0; j < dim; j++)
 					if (j != j1)
-						if (assigncost[i][j] - v[j] < min)
-							min = assigncost[i][j] - v[j];
+						if (assigncost_value[i][j] - v[j] < min)
+							min = assigncost_value[i][j] - v[j];
 				v[j1] = v[j1] - min;
 			}
 
@@ -163,13 +163,13 @@ int Hungarian::lap(int dim,
 			i = free[k];
 			k++;
 
-			// find minimum and second minimum reduced cost over columns.
-			umin = assigncost[i][0] - v[0];
+			// find minimum and second minimum reduced cost_value over columns.
+			umin = assigncost_value[i][0] - v[0];
 			j1 = 0;
 			usubmin = BIG;
 			for (j = 1; j < dim; j++)
 			{
-				h = assigncost[i][j] - v[j];
+				h = assigncost_value[i][j] - v[j];
 				if (h < usubmin)
 					if (h >= umin)
 					{
@@ -188,7 +188,7 @@ int Hungarian::lap(int dim,
 			i0 = colsol[j1];
 			if (umin < usubmin)
 				// change the reduction of the minimum column to increase the minimum
-				// reduced cost in the row to the subminimum.
+				// reduced cost_value in the row to the subminimum.
 				v[j1] = v[j1] - (usubmin - umin);
 			else                   // minimum and subminimum equal.
 				if (i0 >= 0)         // minimum column j1 is assigned.
@@ -223,7 +223,7 @@ int Hungarian::lap(int dim,
 								 // runs until unassigned column added to shortest path tree.
 		for (j = 0; j < dim; j++)
 		{
-			d[j] = assigncost[freerow][j] - v[j];
+			d[j] = assigncost_value[freerow][j] - v[j];
 			pred[j] = freerow;
 			collist[j] = j;        // init column list.
 		}
@@ -276,12 +276,12 @@ int Hungarian::lap(int dim,
 				j1 = collist[low];
 				low++;
 				i = colsol[j1];
-				h = assigncost[i][j1] - v[j1] - min;
+				h = assigncost_value[i][j1] - v[j1] - min;
 
 				for (k = up; k < dim; k++)
 				{
 					j = collist[k];
-					v2 = assigncost[i][j] - v[j] - h;
+					v2 = assigncost_value[i][j] - v[j] - h;
 					if (v2 < d[j])
 					{
 						pred[j] = i;
@@ -323,15 +323,15 @@ int Hungarian::lap(int dim,
 		} while (i != freerow);
 	}
 
-	// calculate optimal cost.
+	// calculate optimal cost_value.
 	
-	cost lapcost = 0;
+	cost_value lapcost_value = 0;
 	for (i = 0; i < dim; i++)
 	{
 		j = rowsol[i];
-		u[i] = assigncost[i][j] - v[j];
+		u[i] = assigncost_value[i][j] - v[j];
 		
-		lapcost = lapcost + assigncost[i][j];
+		lapcost_value = lapcost_value + assigncost_value[i][j];
 	}
 	
 
@@ -342,7 +342,7 @@ int Hungarian::lap(int dim,
 	delete[] matches;
 	delete[] d;
 
-	return lapcost;
+	return lapcost_value;
 }
 
 

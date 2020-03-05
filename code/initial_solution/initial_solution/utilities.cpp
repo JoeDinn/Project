@@ -8,7 +8,7 @@ void output(Solution &solution)
 	std::vector<cv::Mat> images(solution.size());
 	for (int i{ 0 }; i < solution.size(); ++i)
 	{
-		images[i] = solution[i].img;
+		images[i] = solution[i].image;
 	}
 
 
@@ -70,7 +70,7 @@ long long int whiteness_score(Fragment & fragment)
 {
 	long long int whiteness{};
 	long int dim{};
-	for (int i{}; i < fragment.img.rows; ++i)
+	for (int i{}; i < fragment.image.rows; ++i)
 	{
 		dim += (fragment.last_pixel[i] - fragment.first_pixel[i]);
 		for (int j{ fragment.first_pixel[i] }; j < fragment.last_pixel[i]; ++j)
