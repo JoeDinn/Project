@@ -49,7 +49,7 @@ void log(Solution &solution);
 void shuffle(Solution &solution);
 int left_most(Solution &solution);
 
-//Fragment combine(Fragment &left_image, Fragment &right_image);
-
+Fragment combine(Fragment &left_image, Fragment &right_image, int right_start = 0);
+int best_height_match(Fragment &left_image, Fragment &right_image);
 
 long long int whiteness_score(Fragment &fragment);

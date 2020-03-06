@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "utilities.h"
+#include <limits>
 #define DEBUG
 
 void output(Solution &solution)
@@ -65,6 +66,83 @@ int left_most(Solution & solution)
 #endif // DEBUG
 	return left_most_index;
 }
+
+
+Fragment combine(Fragment &left_image, Fragment &right_image, int right_start)
+{
+	int max_cols{};
+
+	int total_rows = left_image.image.rows - abs(right_start);
+#ifdef DEBUG
+	std::cout << "total rows: " << total_rows << std::endl;
+#endif // DEBUG
+	for (int row = 0; row < total_rows; row++)
+	{
+		int left_row = MAX(row, row + right_start);
+		int right_row = MAX(row, row - right_start);
+		max_cols = MAX(left_image.last_pixel[left_row] + right_image.last_pixel[right_row] - right_image.first_pixel[right_row], max_cols);
+	}		
+#ifdef DEBUG
+	std::cout << "Max cols: " << max_cols << std::endl;
+#endif // DEBUG
+	int *first_pixel = new int[total_rows]{};
+	int *last_pixel = new int[total_rows]{};
+	cv::Mat combined_image(total_rows, max_cols, left_image.image.type());
+	combined_image = 0;
+
+	for (int row = 0; row < total_rows; row++)
+	{
+		int left_row = MAX(row, row + right_start);
+		int right_row = MAX(row, row - right_start);
+
+		first_pixel[row] = left_image.first_pixel[left_row];
+		last_pixel[row] = (left_image.last_pixel[left_row] + right_image.last_pixel[right_row]) - right_image.first_pixel[right_row];
+
+
+		for (int col = 0; col < left_image.last_pixel[left_row]; col++)
+		{
+			combined_image.at<uchar>(row, col) = left_image(left_row, col);
+		}
+			
+		for (int col = right_image.first_pixel[right_row]; col < right_image.last_pixel[right_row]; col++)
+		{
+			combined_image.at<uchar>(row, col + (left_image.last_pixel[left_row] - right_image.first_pixel[right_row])) = right_image(right_row, col);
+		}
+		
+	}
+
+	return Fragment(combined_image, left_image.name + right_image.name, first_pixel, last_pixel);
+
+
+}
+
+int best_height_match(Fragment & left_image, Fragment & right_image)
+{
+	//Iterate through each possibility and return index of best result.
+	int best_right_start{};
+	double best_score{ std::numeric_limits<double>::max() };
+
+	for (int right_start = -floor(left_image.image.cols/4); right_start < floor(left_image.image.cols / 4); right_start++)
+	{
+		double score{0};
+		int total_rows = left_image.image.rows - abs(right_start);
+		for (int row = 0; row < total_rows; row++)
+		{
+			int left_row = MAX(row, row + right_start);
+			int right_row = MAX(row, row - right_start);
+			score += abs(left_image(left_row, left_image.last_pixel[left_row]-1) - right_image(right_row,right_image.first_pixel[right_row]));
+		}
+		score = score / total_rows;
+		if (score < best_score)
+		{
+			best_score = score;
+			best_right_start = right_start;
+		}
+	}
+	return best_right_start;
+}
+
+
 
 
 

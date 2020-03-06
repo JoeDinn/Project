@@ -1,15 +1,186 @@
 #include "stdafx.h"
 #include "OCRCharacter.h"
+#define DEBUG
 
+
+long double OCRCharacter::cost(Fragment &left_image, Fragment &right_image)
+{
+	//Combine images
+	int best_height{ best_height_match(left_image,right_image) };
+	Fragment combined_image{ combine(left_image,right_image,best_height) };
+	cv::Mat visited(combined_image.image.rows, combined_image.image.cols, combined_image.image.type(), 0.0);
+	//Threshold
+	combined_image.threshold();
+	//Get lines
+	bool *is_text_line{ new bool[combined_image.image.rows] };
+	combined_image.get_text_lines(is_text_line);
+
+	long double score{ 0 };
+	int number_of_chars{ 0 };
+#ifdef DEBUG
+	cv::Mat visualise_image{ combined_image.image };
+	cvtColor(visualise_image, visualise_image, cv::COLOR_GRAY2RGB);
+#endif//DEBUG
+	//For each line of text
+	for (int row = 0; row < combined_image.image.rows; row++)
+	{
+		if (is_text_line[row])
+		{
+			//Line of text found
+			int adjusted_row = MAX(row, row + best_height);
+			int left{ left_image.last_pixel[adjusted_row] };
+			int right{ left_image.last_pixel[adjusted_row] };
+			int top{ row };
+			int bottom{ row - 1 };
+			//Iterate over each row of line of text
+			while (is_text_line[row])
+			{
+				adjusted_row = MAX(row, row + best_height);
+				//If character overlaps centre boundary and hasn't already been visited (need to allow for discontonuous shapes)
+				if (combined_image(row, left_image.last_pixel[adjusted_row]) == 0 and not(visited.at<uchar>(row, left_image.last_pixel[adjusted_row])))
+				{
+					//Flood fill to find left and right extreme to it
+					grow_region(combined_image, visited, row, left_image.last_pixel[row], left, right);
+				}
+				//Increment row iterator
+				++row;
+			}
+			if(left != right)
+			{
+				bottom = row - 1;
+				//Append to vector
+				cv::Mat character_image(combined_image.image,
+					cv::Range(top, bottom + 1), // rows
+					cv::Range(left, right + 1));// cols
+#ifdef DEBUG
+				cv::rectangle(visualise_image, cv::Point(left - 1, top - 1), cv::Point(right + 1, bottom + 1), CV_RGB(255, 0, 0), 1, 8, 0);
+#endif // DEBUG
+				score -= char_score(character_image);
+				number_of_chars++;
+			}
+		}
+	}
+#ifdef DEBUG
+	cv::imwrite("d:/ocr/Visualisation.png",visualise_image);
+#endif // DEBUG
+
+
+	return score/number_of_chars;
+}
+
+int OCRCharacter::char_score(cv::Mat &image)
+{
+
+	// ...other image pre-processing here...
+
+	// Pass it to Tesseract API
+	tesseract::TessBaseAPI tess;
+	tess.Init("D:/Program Files/Tesseract-OCR/tessdata", "eng", tesseract::OEM_DEFAULT);//adjust
+	tess.SetPageSegMode(tesseract::PSM_SINGLE_CHAR);//Detect single character
+#ifdef DEBUG
+	std::cout << image.data << std::endl;
+#endif // DEBUG
+
+	tess.SetImage((uchar*)image.data, image.cols, image.rows, 1, image.cols);
+	tess.SetSourceResolution(70);
+
+	// Get the text
+	char* character = tess.GetUTF8Text();
+	int* confidence = tess.AllWordConfidences();//Confidence score in range 0,100
+#ifdef DEBUG
+	std::cout << "character: " << character << " confidence: " << *confidence << std::endl;
+#endif // DEBUG
+	return  -*confidence;
+}
+
+void OCRCharacter::grow_region(Fragment &image, cv::Mat &visited, int row, int col, int &left_most, int &right_most)
+{
+	if (col < image.last_pixel[row] and col >= image.first_pixel[row])
+		if (image(row, col) == 0 and visited.at<uchar>(row, col) == 0)
+		{
+			visited.at<uchar>(row, col) = 1;
+
+			right_most = MAX(right_most, col);
+
+			left_most = MIN(left_most, col);
+
+			grow_region(image, visited, row, MIN(col + 1, image.last_pixel[row] - 1), left_most, right_most);
+			grow_region(image, visited, row, MAX(col - 1, image.first_pixel[row]), left_most, right_most);
+			grow_region(image, visited, MIN(row + 1, image.image.rows), col, left_most, right_most);
+			grow_region(image, visited, MAX(row - 1, 0), col, left_most, right_most);
+		}
+}
+
+
+
+OCRCharacter::OCRCharacter()
+{
+}
+
+
+OCRCharacter::~OCRCharacter()
+{
+}
+
+
+
+/*
 //#define DEBUG
 
 long double OCRCharacter::cost(Fragment &left_image, Fragment &right_image)
 {
-	//Threshold images
-	Fragment left_image_thresholded = left_image.get_thresholded();
-	Fragment right_image_thresholded = right_image.get_thresholded();
-
 	
+
+	cv::Mat visited(combined_image.image.rows, combined_image.image.cols, combined_image.image.type(), 0.0);
+	//Get row sums
+
+	bool *is_text_line{ new bool[combined_image.image.rows] };
+	combined_image.get_text_lines(is_text_line);
+	//Find tops and bottoms of lines in left (iterate down histogram until find black)
+	for (int row = 0; row < combined_image.image.rows; row++)
+	{
+		//If there are black pixels in the row iterate until find black pixel on edge
+		if (is_text_line[row])
+		{
+			int left{ left_image.last_pixel[row] };
+			int right{ left_image.last_pixel[row] };
+			int top{ row };
+			int bottom{ row - 1 };
+
+			bool found{ false };
+			while (is_text_line[row])
+			{
+				//If pixel overlaps edge and hasn't already been visited (need to allow for discontonuous shapes)
+				if (combined_image(row, left_image.last_pixel[row]) == 0 and not(visited.at<uchar>(row, left_image.last_pixel[row])))
+				{
+					//Flood fill to find left and right extreme to it
+					grow_region(combined_image, visited, row, left_image.last_pixel[row], left, right);
+				}
+				//Increment row iterator
+				++row;
+			}
+			bottom = row;
+			//Append to vector
+			cv::Mat character_image(combined_image.image,
+				cv::Range(top, left_characters[left_index].bottom + 1), // rows
+				cv::Range(left_characters[left_index].left, left_characters[left_index].right + 1));// cols
+
+
+			characters.emplace_back(PotentialChar(bottom, top, right, left));
+
+		}
+	}
+	return characters;
+
+
+
+
+
+
+
+
+
+
 	//Find characters in left side
 	int *last_pixel_edge{ new int[left_image_thresholded.image.rows] };
 	for (int i{}; i < left_image_thresholded.image.rows; ++i) last_pixel_edge[i] = left_image_thresholded.last_pixel[i] - 1;
@@ -25,10 +196,6 @@ long double OCRCharacter::cost(Fragment &left_image, Fragment &right_image)
 	{
 		cv::rectangle(visualise_image, cv::Point(pot_cahr.left, pot_cahr.top), cv::Point(pot_cahr.right, pot_cahr.bottom), CV_RGB(255, 0, 0), 1, 8, 0);
 	}
-	for (PotentialChar pot_cahr :right_characters)
-	{
-		cv::rectangle(visualise_image, cv::Point(pot_cahr.left + left_image.image.cols, pot_cahr.top), cv::Point(pot_cahr.right + left_image.image.cols, pot_cahr.bottom), CV_RGB(255, 0, 0), 1, 8, 0);
-	}
 	cv::imwrite("D:/ocr/chars.png", visualise_image);
 	/////
 #endif // DEBUG
@@ -39,7 +206,7 @@ long double OCRCharacter::cost(Fragment &left_image, Fragment &right_image)
 	pad(right_characters, left_characters.size() - right_characters.size());
 	//assign indexes to each other (use distance metric of closeness)
 	//assign and combine images
-	std::vector<cv::Mat> characters{ combine(left_characters,right_characters,left_image_thresholded,right_image_thresholded) };
+	
 	//for each image calculate confidence
 	long double total_score{};
 	for (cv::Mat character : characters)
@@ -55,201 +222,31 @@ long double OCRCharacter::cost(Fragment &left_image, Fragment &right_image)
 #endif // DEBUG
 	return total_score;
 }
+/*
 
-int OCRCharacter::char_score(cv::Mat &image)
+
+
+/*
+//Cut out rectangles
+cv::Mat left_half(left_image.image,
+cv::Range(left_characters[left_index].top, left_characters[left_index].bottom + 1), // rows
+cv::Range(left_characters[left_index].left, left_characters[left_index].right + 1));// cols
+cv::Mat right_half(right_image.image,
+cv::Range(right_characters[right_index].top, right_characters[right_index].bottom + 1), // rows
+cv::Range(right_characters[right_index].left, right_characters[right_index].right + 1));// cols
+//Resize to be equal
+if (left_half.rows < right_half.rows)
 {
-	
-	// ...other image pre-processing here...
-
-	// Pass it to Tesseract API
-	tesseract::TessBaseAPI tess;
-	tess.Init("D:/Program Files/Tesseract-OCR/tessdata", "eng", tesseract::OEM_DEFAULT);//adjust
-	tess.SetPageSegMode(tesseract::PSM_SINGLE_CHAR);//Detect single character
-	tess.SetImage((uchar*)image.data, image.cols, image.rows, 1, image.cols);
-
-	// Get the text
-	char* character = tess.GetUTF8Text();
-	int* confidence = tess.AllWordConfidences();//Confidence score in range 0,100
-#ifdef DEBUG
-	std::cout << "character: " << character << " confidence: " << *confidence << std::endl;
-#endif // DEBUG
-	return  - *confidence;
+cv::Mat pad( right_half.rows - left_half.rows, left_half.cols, 0);
+cv::vconcat(left_half, pad, left_half);
 }
-
-void OCRCharacter::grow_region(Fragment &image, cv::Mat &visited, int row, int col, int &left_most, int &right_most)
+else if (right_half.rows < left_half.rows)
 {
-	if(col < image.last_pixel[row] and col >= image.first_pixel[row])
-		if (image(row, col) == 0 and visited.at<uchar>(row, col) == 0)
-		{
-			visited.at<uchar>(row, col) = 1;
-
-			right_most = MAX(right_most, col);
-
-			left_most = MIN(left_most, col);
-		
-			grow_region(image, visited, row,MIN(col + 1, image.last_pixel[row] - 1) ,  left_most,  right_most);
-			grow_region(image, visited, row,MAX(col - 1, image.first_pixel[row]), left_most, right_most);
-			grow_region(image, visited, MIN(row + 1, image.image.rows), col, left_most, right_most);
-			grow_region(image, visited, MAX(row - 1, 0), col,  left_most, right_most);
-		}
+cv::Mat pad( left_half.rows - right_half.rows, right_half.cols, 0 );
+cv::vconcat(right_half, pad, right_half);
 }
-
-std::vector<PotentialChar> OCRCharacter::get_potential_characters(Fragment & fragment, int * edge)
-{
-	std::vector<PotentialChar> characters{};
-
-	cv::Mat visited(fragment.image.rows, fragment.image.cols, fragment.image.type(), 0.0);
-	//Get row sums
-	
-	bool *is_text_line{ new bool[fragment.image.rows] };
-	fragment.get_text_lines(is_text_line);
-	//Find tops and bottoms of lines in left (iterate down histogram until find black)
-	for (int row = 0; row < fragment.image.rows; row++)
-	{
-		//If there are black pixels in the row iterate until find black pixel on edge
-		if (is_text_line[row])
-		{
-			int left{ edge[row] };
-			int right{ edge[row] };
-			int top{ row };
-			int bottom{ row-1 };
-			
-			bool found{ false };
-			while (is_text_line[row])
-			{
-				//If pixel overlaps edge and hasn't already been visited (need to allow for discontonuous shapes)
-				if (fragment(row, edge[row]) == 0 and not(visited.at<uchar>(row,edge[row])))
-				{
-					//Flood fill to find left and right extreme to it
-					grow_region(fragment, visited, row, edge[row], left, right);
-				}
-				//Increment row iterator
-				++row;
-			}
-			bottom = row;
-			//Append to vector
-			characters.emplace_back(PotentialChar(bottom, top, right, left));
-			
-		}
-	}
-	return characters;
-}
-
-std::vector<cv::Mat> OCRCharacter::combine(std::vector<PotentialChar> &left_characters, std::vector<PotentialChar> &right_characters, Fragment &left_image, Fragment &right_image)
-{
-#ifdef DEBUG
-	cv::Mat visualise_image{};
-	cv::hconcat(left_image.image, right_image.image, visualise_image);
-	cvtColor(visualise_image, visualise_image, cv::COLOR_GRAY2RGB);
-#endif // DEBUG
-
-	//Formulate problem
-	int dim{ (int)left_characters.size() };
-	col *row_in_solution{ new col[dim] };
-	row *col_in_solution{ new row[dim] };
-	cost_value *u{ new cost_value[dim] };
-	cost_value *v{ new cost_value[dim] };
-
-	cost_value **assign_cost{ new cost_value*[dim] };
-	for (int i = 0; i < dim; i++)
-		assign_cost[i] = new cost_value[dim];
-
-	for (int i = 0; i < dim; i++)
-	{
-		for (int j = 0; j < dim; j++)
-		{
-			if (i == j)
-			{
-				assign_cost[i][j] = BIG;
-			}
-			else if (left_characters[i].is_dummy or right_characters[j].is_dummy)
-			{
-				assign_cost[i][j] = 0; //Dummy matches are 0 cost (doesn't matter what they are)
-			}
-			else
-			{
-				assign_cost[i][j] = abs(left_characters[i].top - right_characters[j].top);//Cost = distance between top row of two characters  i = left, j = right);
-			}
-		}
-	}
-	Hungarian H{*this};
-	H.lap(dim, assign_cost, row_in_solution, col_in_solution, u, v);
-
-	std::vector<cv::Mat> characters{};
-	for (int left_index = 0; left_index < dim; left_index++)
-	{
-		
-		int right_index = row_in_solution[left_index];
-		if (not(left_characters[left_index].is_dummy)and not(right_characters[right_index].is_dummy))
-		{
-
-			//Cut out rectangles
-			cv::Mat left_half(left_image.image,
-				cv::Range(left_characters[left_index].top, left_characters[left_index].bottom + 1), // rows
-				cv::Range(left_characters[left_index].left, left_characters[left_index].right + 1));// cols
-			cv::Mat right_half(right_image.image,
-				cv::Range(right_characters[right_index].top, right_characters[right_index].bottom + 1), // rows
-				cv::Range(right_characters[right_index].left, right_characters[right_index].right + 1));// cols
-																										//Resize to be equal
-			if (left_half.rows < right_half.rows)
-			{
-				cv::Mat pad( right_half.rows - left_half.rows, left_half.cols, 0);
-				cv::vconcat(left_half, pad, left_half);
-			}
-			else if (right_half.rows < left_half.rows)
-			{
-				cv::Mat pad( left_half.rows - right_half.rows, right_half.cols, 0 );
-				cv::vconcat(right_half, pad, right_half);
-			}
-			//Concatenate
-			cv::Mat whole;
-			cv::hconcat(left_half, right_half, whole);
-			characters.emplace_back(whole);
-
-#ifdef DEBUG
-			//std::cout << "Left char at: " << left_characters[left_index].top;// << " Matched with: " << right_characters[right_index].top << std::endl;
-			std::cout << "Left char at: " << left_characters[left_index].top << " Matched with: " << right_characters[right_index].top << std::endl;
-			std::cout << cv::Point(left_characters[left_index].left, left_characters[left_index].top) << " " << cv::Point(left_characters[left_index].right, left_characters[left_index].bottom) << std::endl;
-			std::cout << cv::Point(right_characters[right_index].left, right_characters[right_index].top) << " " << cv::Point(right_characters[right_index].right, right_characters[right_index].bottom) << std::endl;
-			//cv::imwrite("D:/ocr/Whole.png", whole);///
-			cv::rectangle(visualise_image, cv::Point(left_characters[left_index].left, left_characters[left_index].top), cv::Point(left_characters[left_index].right, left_characters[left_index].bottom), CV_RGB(255, 0, 0), 1, 8, 0);
-			cv::rectangle(visualise_image, cv::Point(right_characters[right_index].left + left_image.image.cols, right_characters[right_index].top), cv::Point(right_characters[right_index].right + left_image.image.cols, right_characters[right_index].bottom), CV_RGB(255, 0, 0), 1, 8, 0);
-			arrowedLine(visualise_image, cv::Point(left_characters[left_index].right, left_characters[left_index].bottom), cv::Point(right_characters[right_index].left + left_image.image.cols, right_characters[right_index].top), CV_RGB(255, 0, 0), 1, 8, 0, 0.1);
-#endif // DEBUG
-		}
-		
-	}
-
-#ifdef DEBUG
-	cv::imwrite("D:/ocr/boxes.png", visualise_image);
-#endif // DEBUG
-	std::cout << "Character count: " << characters.size() << std::endl;
-	return characters;
-}
-
-void OCRCharacter::pad(std::vector<PotentialChar> &characters, int amount)
-{
-	for (int i = 0; i < amount; ++i)
-	{
-		characters.emplace_back(PotentialChar());
-	}
-}
-
-OCRCharacter::OCRCharacter()
-{
-}
-
-
-OCRCharacter::~OCRCharacter()
-{
-}
-
-PotentialChar::PotentialChar(int bottom_, int top_, int right_, int left_, bool is_dummy_):
-	bottom(bottom_), top(top_), right(right_), left(left_), is_dummy(is_dummy_)
-{
-}
-
-PotentialChar::PotentialChar(bool is_dummy_):
-	is_dummy(is_dummy_)
-{
-}
+//Concatenate
+cv::Mat whole;
+cv::hconcat(left_half, right_half, whole);
+characters.emplace_back(whole);
+*/
