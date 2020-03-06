@@ -15,6 +15,7 @@ struct Fragment
 	Fragment(std::string root_,std::string name_);
 	Fragment(const Fragment &fragment);
 	Fragment();
+	Fragment get_thresholded();
 	void threshold();
 	void colour_histogram(int hist[256]);
 	void get_text_lines(bool *is_text_line);

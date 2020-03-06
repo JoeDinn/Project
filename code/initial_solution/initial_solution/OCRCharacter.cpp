@@ -1,20 +1,21 @@
 #include "stdafx.h"
 #include "OCRCharacter.h"
 
-#define DEBUG
+//#define DEBUG
 
 long double OCRCharacter::cost(Fragment &left_image, Fragment &right_image)
 {
 	//Threshold images
-	left_image.threshold();
-	right_image.threshold();
+	Fragment left_image_thresholded = left_image.get_thresholded();
+	Fragment right_image_thresholded = right_image.get_thresholded();
+
 	
 	//Find characters in left side
-	int *last_pixel_edge{ new int[left_image.image.rows] };
-	for (int i{}; i < left_image.image.rows; ++i) last_pixel_edge[i] = left_image.last_pixel[i] - 1;
-	std::vector<PotentialChar> left_characters{get_potential_characters(left_image, last_pixel_edge)};
+	int *last_pixel_edge{ new int[left_image_thresholded.image.rows] };
+	for (int i{}; i < left_image_thresholded.image.rows; ++i) last_pixel_edge[i] = left_image_thresholded.last_pixel[i] - 1;
+	std::vector<PotentialChar> left_characters{get_potential_characters(left_image_thresholded, last_pixel_edge)};
 	//Find characters in right side
-	std::vector<PotentialChar> right_characters{ get_potential_characters(right_image,right_image.first_pixel) };
+	std::vector<PotentialChar> right_characters{ get_potential_characters(right_image_thresholded,right_image_thresholded.first_pixel) };
 #ifdef DEBUG
 	//////////////////////
 	cv::Mat visualise_image{};
@@ -31,26 +32,32 @@ long double OCRCharacter::cost(Fragment &left_image, Fragment &right_image)
 	cv::imwrite("D:/ocr/chars.png", visualise_image);
 	/////
 #endif // DEBUG
+	//Prune
+
 	//Pad one to size of other with dummy chars
 	pad(left_characters, right_characters.size() - left_characters.size());
 	pad(right_characters, left_characters.size() - right_characters.size());
 	//assign indexes to each other (use distance metric of closeness)
 	//assign and combine images
-	std::vector<cv::Mat> characters{ combine(left_characters,right_characters,left_image,right_image) };
+	std::vector<cv::Mat> characters{ combine(left_characters,right_characters,left_image_thresholded,right_image_thresholded) };
 	//for each image calculate confidence
 	long double total_score{};
 	for (cv::Mat character : characters)
 	{
+#ifdef DEBUG
+		std::cout << "current score " << total_score << std::endl;
+#endif // DEBUG
 		int score{ char_score(character) };
 		total_score += score;
 	}
+#ifdef DEBUG
 	std::cout << "Total score " << total_score << std::endl;
+#endif // DEBUG
 	return total_score;
 }
 
 int OCRCharacter::char_score(cv::Mat &image)
 {
-	std::cout << image.size << std::endl;
 	
 	// ...other image pre-processing here...
 
@@ -61,10 +68,12 @@ int OCRCharacter::char_score(cv::Mat &image)
 	tess.SetImage((uchar*)image.data, image.cols, image.rows, 1, image.cols);
 
 	// Get the text
-	char* words = tess.GetUTF8Text();
-	int* confidence = tess.AllWordConfidences();//Confidence score
-	std::cout << words << " " << *confidence << std::endl;
-	return *confidence;
+	char* character = tess.GetUTF8Text();
+	int* confidence = tess.AllWordConfidences();//Confidence score in range 0,100
+#ifdef DEBUG
+	std::cout << "character: " << character << " confidence: " << *confidence << std::endl;
+#endif // DEBUG
+	return  - *confidence;
 }
 
 void OCRCharacter::grow_region(Fragment &image, cv::Mat &visited, int row, int col, int &left_most, int &right_most)
@@ -119,10 +128,8 @@ std::vector<PotentialChar> OCRCharacter::get_potential_characters(Fragment & fra
 			}
 			bottom = row;
 			//Append to vector
-			if (bottom-top > 1 and right-left > 1)
-			{
-				characters.emplace_back(PotentialChar(bottom, top, right, left));
-			}
+			characters.emplace_back(PotentialChar(bottom, top, right, left));
+			
 		}
 	}
 	return characters;
@@ -175,9 +182,6 @@ std::vector<cv::Mat> OCRCharacter::combine(std::vector<PotentialChar> &left_char
 		int right_index = row_in_solution[left_index];
 		if (not(left_characters[left_index].is_dummy)and not(right_characters[right_index].is_dummy))
 		{
-			std::cout << cv::Point(left_characters[left_index].left, left_characters[left_index].top) << " " << cv::Point(left_characters[left_index].right, left_characters[left_index].bottom) << std::endl;
-			std::cout << cv::Point(right_characters[right_index].left, right_characters[right_index].top) << " " << cv::Point(right_characters[right_index].right, right_characters[right_index].bottom) << std::endl;
-
 
 			//Cut out rectangles
 			cv::Mat left_half(left_image.image,
@@ -200,7 +204,7 @@ std::vector<cv::Mat> OCRCharacter::combine(std::vector<PotentialChar> &left_char
 			//Concatenate
 			cv::Mat whole;
 			cv::hconcat(left_half, right_half, whole);
-
+			characters.emplace_back(whole);
 
 #ifdef DEBUG
 			//std::cout << "Left char at: " << left_characters[left_index].top;// << " Matched with: " << right_characters[right_index].top << std::endl;
@@ -212,7 +216,6 @@ std::vector<cv::Mat> OCRCharacter::combine(std::vector<PotentialChar> &left_char
 			cv::rectangle(visualise_image, cv::Point(right_characters[right_index].left + left_image.image.cols, right_characters[right_index].top), cv::Point(right_characters[right_index].right + left_image.image.cols, right_characters[right_index].bottom), CV_RGB(255, 0, 0), 1, 8, 0);
 			arrowedLine(visualise_image, cv::Point(left_characters[left_index].right, left_characters[left_index].bottom), cv::Point(right_characters[right_index].left + left_image.image.cols, right_characters[right_index].top), CV_RGB(255, 0, 0), 1, 8, 0, 0.1);
 #endif // DEBUG
-			//characters.emplace_back(whole);
 		}
 		
 	}
@@ -220,6 +223,7 @@ std::vector<cv::Mat> OCRCharacter::combine(std::vector<PotentialChar> &left_char
 #ifdef DEBUG
 	cv::imwrite("D:/ocr/boxes.png", visualise_image);
 #endif // DEBUG
+	std::cout << "Character count: " << characters.size() << std::endl;
 	return characters;
 }
 

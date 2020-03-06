@@ -66,6 +66,8 @@ int left_most(Solution & solution)
 	return left_most_index;
 }
 
+
+
 long long int whiteness_score(Fragment & fragment)
 {
 	long long int whiteness{};

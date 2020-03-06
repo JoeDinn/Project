@@ -1,8 +1,24 @@
-﻿  OCRCharacter.cpp
-d:\project\code\initial_solution\initial_solution\ocrcharacter.cpp(35): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+﻿  DiffSquared.cpp
+d:\project\code\initial_solution\initial_solution\diffsquared.cpp(17): warning C4101: 'e': unreferenced local variable
+  EdgeDistance.cpp
+  Greedy.cpp
+  Hungarian.cpp
+d:\project\code\initial_solution\initial_solution\hungarian.cpp(345): warning C4244: 'return': conversion from 'cost_value' to 'int', possible loss of data
+  Main.cpp
+  Metric.cpp
+  OCRCharacter.cpp
 d:\project\code\initial_solution\initial_solution\ocrcharacter.cpp(36): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+d:\project\code\initial_solution\initial_solution\ocrcharacter.cpp(37): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  SimAneal.cpp
+d:\project\code\initial_solution\initial_solution\simaneal.cpp(37): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+d:\project\code\initial_solution\initial_solution\simaneal.cpp(91): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  Similarity.cpp
+d:\project\code\initial_solution\initial_solution\similarity.cpp(10): warning C4101: 'e': unreferenced local variable
+  neighbour_comparison.cpp
+  utilities.cpp
+d:\project\code\initial_solution\initial_solution\utilities.cpp(35): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
   Generating code
-  2 of 975 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
+  0 of 732 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
     0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code

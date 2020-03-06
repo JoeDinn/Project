@@ -62,6 +62,13 @@ Fragment::Fragment() :
 {
 }
 
+Fragment Fragment::get_thresholded()
+{
+	Fragment thresholded(*this);
+	thresholded.threshold();
+	return thresholded;
+}
+
 
 
 void Fragment::threshold()
