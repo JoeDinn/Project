@@ -9,6 +9,8 @@ struct Fragment
 	
 	std::string name;
 	cv::Mat image;
+	bool is_thresholded;
+	cv::Mat thresholded;
 	int *first_pixel;
 	int *last_pixel;
 	Fragment(std::string root_,std::string name_);

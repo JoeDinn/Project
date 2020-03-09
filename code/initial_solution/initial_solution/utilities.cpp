@@ -1,23 +1,24 @@
 #include "stdafx.h"
 #include "utilities.h"
 #include <limits>
-#define DEBUG
+//#define DEBUG
 
 void output(Solution &solution)
 {
 	std::cout << std::endl << "Size" << solution.size() << std::endl;
-	std::vector<cv::Mat> images(solution.size());
-	for (int i{ 0 }; i < solution.size(); ++i)
+	Fragment image(solution[0]);
+	for (int i{ 1 }; i < solution.size(); ++i)
 	{
-		images[i] = solution[i].image;
+		//Fragment left_thresh = image.get_thresholded();
+		//Fragment right_thresh = solution[i].get_thresholded();
+		int right_start = best_height_match(image, solution[i]);
+		image = combine_whole(image, solution[i]);
 	}
 
-
-	cv::Mat combined;
-	cv::hconcat(images, combined);
-	cv::namedWindow("Display window", cv::WINDOW_NORMAL); // Create a window for display.
-	cv::imshow("Display window", combined); // Show our image inside it.
-	cv::waitKey(0); // Wait for a keystroke in the window
+	cv::imwrite("D:/ocr/bestheight.png", image.image);
+	cv::namedWindow("Display window", cv::WINDOW_NORMAL); 
+	cv::imshow("Display window", image.image); 
+	cv::waitKey(0); 
 }
 
 void log(Solution &solution)
@@ -112,11 +113,40 @@ Fragment combine(Fragment &left_image, Fragment &right_image, int right_start)
 	}
 
 	return Fragment(combined_image, left_image.name + right_image.name, first_pixel, last_pixel);
-
-
 }
 
-int best_height_match(Fragment & left_image, Fragment & right_image)
+Fragment combine_whole(Fragment &left_image, Fragment &right_image, int right_start)
+{
+	cv::Mat combined_image;
+	cv::Mat left_padded(left_image.image.rows + abs(right_start), left_image.image.cols , left_image.image.type());
+	cv::Mat right_padded(left_image.image.rows + abs(right_start), right_image.image.cols, left_image.image.type());
+	cv::Mat pad = cv::Mat::zeros(abs(right_start), left_image.image.cols, left_image.image.type());    // 3 cols, 4 rows
+	if (right_start > 0)//left image starts at 0
+	{
+		//Pad left below
+		cv::vconcat(left_padded, pad, left_padded);
+		//Pad right above
+		cv::vconcat(pad, right_padded, right_padded);
+	}
+	else if (right_start < 0)//Right image starts above
+	{
+		//Pad left above
+		cv::vconcat(pad, left_padded, left_padded);
+		//Pad right below
+		cv::vconcat(right_padded, pad, right_padded);
+	}
+	else
+	{
+		return combine(left_image,right_image);
+	}
+	cv::hconcat(left_padded, right_padded, combined_image);
+
+
+	return Fragment(combined_image, left_image.name + right_image.name, left_image.first_pixel, left_image.last_pixel);//Last and first dont matter
+}
+
+
+int best_height_match(Fragment & left_image, Fragment & right_image,long double *cost)
 {
 	//Iterate through each possibility and return index of best result.
 	int best_right_start{};
@@ -139,6 +169,7 @@ int best_height_match(Fragment & left_image, Fragment & right_image)
 			best_right_start = right_start;
 		}
 	}
+	if(cost) *cost = best_score;
 	return best_right_start;
 }
 

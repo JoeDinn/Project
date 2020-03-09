@@ -87,6 +87,15 @@
     <ClInclude Include="neighbour_comparison.h">
       <Filter>Metric\Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="BestHeightEdgeDistance.h">
+      <Filter>Similarity\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SimilarityTester.h">
+      <Filter>Other\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BWBHED.h">
+      <Filter>Similarity\Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -127,6 +136,15 @@
     </ClCompile>
     <ClCompile Include="neighbour_comparison.cpp">
       <Filter>Metric\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BestHeightEdgeDistance.cpp">
+      <Filter>Similarity\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SimilarityTester.cpp">
+      <Filter>Other\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BWBHED.cpp">
+      <Filter>Similarity\Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

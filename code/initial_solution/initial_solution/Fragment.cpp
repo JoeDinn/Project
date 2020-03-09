@@ -4,7 +4,7 @@
 #include <fstream>
 
 Fragment::Fragment(std::string root_,std::string name_):
-	name(name_), image(cv::imread(root_ + "/strips/" + name_ + ".png", cv::IMREAD_GRAYSCALE)) 
+	name(name_), image(cv::imread(root_ + "/strips/" + name_ + ".png", cv::IMREAD_GRAYSCALE)) ,is_thresholded(false)
 
 {
 	cv::Mat mask{ cv::imread(root_ + "/masks/" + name_ + ".png", cv::IMREAD_GRAYSCALE) };
@@ -52,31 +52,38 @@ Fragment::Fragment(std::string root_,std::string name_):
 }
 
 Fragment::Fragment(const Fragment & fragment) :
-	image(fragment.image), name(fragment.name), first_pixel(fragment.first_pixel), last_pixel(fragment.last_pixel)
+	image(fragment.image), name(fragment.name), first_pixel(fragment.first_pixel), last_pixel(fragment.last_pixel), is_thresholded(false)
 {
 }
 
 Fragment::Fragment(cv::Mat image_, std::string name_, int * first_pixel_, int * last_pixel_):
-	image(image_), name(name_), first_pixel(first_pixel_), last_pixel(last_pixel_)
+	image(image_), name(name_), first_pixel(first_pixel_), last_pixel(last_pixel_), is_thresholded(false)
 {
 }
 
 
-Fragment::Fragment() 
+Fragment::Fragment() :is_thresholded(false)
 {
 }
 
 Fragment Fragment::get_thresholded()
 {
-	Fragment thresholded(*this);
-	thresholded.threshold();
-	return thresholded;
+	if (not(is_thresholded))
+	{
+		threshold();
+	}
+	
+	return Fragment(thresholded,name,first_pixel,last_pixel);
 }
 
 
 
 void Fragment::threshold()
 {
+
+	thresholded = cv::Mat(image.rows, image.cols, image.type(), 0.0);
+	is_thresholded = true;
+
 	int hist[256]{};
 	colour_histogram(hist);
 	
@@ -131,7 +138,7 @@ void Fragment::threshold()
 	{
 		for (int j{ first_pixel[i] }; j < last_pixel[i]; ++j)
 		{
-			(*this)(i, j) = ((int)(*this)(i, j) < best_threshold) ? 0 : 255;
+			thresholded.at<uchar>(i, j) = ((int)(*this)(i, j) < best_threshold) ? 0 : 255;
 
 		}
 	}
